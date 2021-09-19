@@ -4,6 +4,8 @@ A great XLR mute box with an illuminated button. Built out of aluminium – or 3
 # Technical Background
 Note, that the contacts of your button need a very low contact resistance of about 50 mOhm. To bypass that (these small miniature buttons are often ugly) and make even big illuminated buttons available, we use a electromechanical relay in our project.
 
+The relay (and the LED) is powered over a DC 5 Volt jack using a USB cable. A relay with 5 Volt will fit perfectly. Often only 12 Volt versions are available. But don't worry, we have a solution for that.
+
 ### Shorting Pin 2 & 3 together
 
 How does muting XLR work? Well – to be precise you won't be able to mute an XLR connection to 100%. Any XLR mute box you can buy is actually not muting, but lowering the level significally [typically greater than 50 dB](https://service.shure.com/s/article/mute-switch-with-phantom-power?language=en_US); thus, the signal becomes inaudible for human ears.
