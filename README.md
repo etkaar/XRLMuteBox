@@ -2,7 +2,7 @@
 A great XLR mute box with an illuminated button. Built out of aluminium – or 3D printed as you will.
 
 # Technical Background
-Note, that the contacts of your button need a very low contact resistance of about 50 mOhm. To bypass that (these small miniature buttons are often ugly) and make even big illuminated buttons available, we make use of an electromechanical relay in our project.
+Note, that the contacts of your button need a very low contact resistance of about 50 mOhm. To bypass that (these small miniature buttons are often ugly) and make even big illuminated buttons available, we make use of an electromechanical relay.
 
 The relay (and the LED) is powered over a DC 5 Volt jack using a USB cable. A relay with 5 Volt will fit perfectly. Often only 12 Volt versions are available. But don't worry, we have a solution for that.
 
