@@ -18,4 +18,4 @@ The box will work perfectly for you if you're streamer and only want to mute you
 
 ### Why not disconnecting Pin 1 or Pin 2 & 3?
 
-Possible of course; however that causes the microphone to be discharged, thus resulting in disturbing cracking or popping sounds. Also, this method is way slower. While shorting Pin 2 & 3 lets you mute *and* unmute the microphone even multiple times within seconds, your microphone will need a few seconds to be ready once unmuted again.
+Possible of course; however that causes the microphone to be discharged, thus resulting in disturbing cracking or popping sounds. Also, this method is way slower. While shorting Pin 2 & 3 lets you mute *and* unmute the microphone even multiple times within seconds, your microphone will need a couple of seconds to be ready once unmuted again.
