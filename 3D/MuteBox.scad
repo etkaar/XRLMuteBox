@@ -17,6 +17,7 @@ BOX_HEIGHT = 51;
 
 BOX_COLOR1 = "DarkSlateBlue";
 BOX_COLOR2 = "Indigo";
+BOX_COLOR3 = "MediumSlateBlue";
 
 /**
 *	Always add some padding to these values
@@ -25,10 +26,12 @@ BOLTS_M3_DMTR = 3 + 0.8;
 BOLTS_M3_HEAD_HEIGHT = 2.0 + 1.0;
 BOLTS_M3_HEAD_DMTR = 6 + 1.5;
 
+BOLTS_M4_DMTR = 4 + 0.4;
+
 THREADED_NUTS_M3_HEIGHT = 2.4 + 0.2;
 THREADED_NUTS_M3_DMTR = 5.5 + 1.2;
 
-THREADED_NUTS_M4_HEIGHT = 3.0 + 0.2;
+THREADED_NUTS_M4_HEIGHT = 3.0 + 0.4;
 THREADED_NUTS_M4_DMTR = 6.85 + 1.2;
 
 /**
@@ -53,11 +56,11 @@ DCV5_DRIFT = 3;
 /**
 *	Illuminated front text
 */
-FRONT_TEXT = "ON AIR";
+FRONT_TEXT = "L I V E";
 FRONT_TEXT_SIZE = 9.0;
 FRONT_TEXT_SPACING = 1.05;
 
-FRONT_TEXT_BARS_LENGTH = (BOX_WIDTH / 1.65);
+FRONT_TEXT_BARS_LENGTH = (BOX_WIDTH / 1.95);
 
 /**
 *	NOTE: Only relevant if you don't seperate the front text but
@@ -185,15 +188,11 @@ if (!HIDE_RIGHT_SIDE) {
 */
 module DrawTopPlate() {
 	difference() {
-		/**
-		*	Plate
-		*/
+		// Plate
 		color(BOX_COLOR1)
 		cube([BOX_LENGTH, BOX_WIDTH, BASE_THICKNESS]);
 
-		/**
-		*	Hole for the big red button
-		*/
+		// Hole for the big red button
 		translate([(BOX_LENGTH / 2 + 10), (BOX_WIDTH / 2), 0 - OVERLAP1])
 		cylinder(h=BASE_THICKNESS + OVERLAP2, d=MUTE_BUTTON_HOLE_DMTR, center=false);
 	}
@@ -236,63 +235,85 @@ module DrawBottomPlate() {
 		rotate(_rotation) {
 			difference() {
 				
-				_holder_size = THREADED_NUTS_M4_DMTR * 1.5;
-				_leg_height = THREADED_NUTS_M4_HEIGHT;
-				_holder_drift = HOLDER_THICKNESS * 1.75;
+				_holder_width = THREADED_NUTS_M4_DMTR * 1.5;
+				_holder_length = THREADED_NUTS_M4_DMTR * 1.25;
+				_holder_height = THREADED_NUTS_M4_HEIGHT * 1.4;
+				_holder_drift = HOLDER_THICKNESS * 2.5;
 				
 				union() {
-					/**
-					*	Plate
-					*/
-					color(BOX_COLOR1)
-					cube([BOX_LENGTH - (2 * BASE_THICKNESS), BOX_WIDTH - (2 * BASE_THICKNESS), BASE_THICKNESS]);
+					// Plate
+					color(BOX_COLOR3)
+					cube([BOX_LENGTH - (2 * BASE_THICKNESS) + SEPARATE_FRONT_TEXT_PLATE_THICKNESS, BOX_WIDTH - (2 * BASE_THICKNESS), BASE_THICKNESS]);
 					
-					translate([_holder_drift, _holder_drift, 0])
-					#cube([_holder_size, _holder_size, _leg_height], center=false);
-				
-					/**
-					*	Holders for the threaded nuts
-					*/
-					//translate([HOLDER_THICKNESS * (-1), HOLDER_THICKNESS * (-1), 0]) {						
-						/*for(SIDE = [0, 1]) {
-							_x = (SIDE == 0)
-								? _holder_drift
-								: (BOX_LENGTH - _holder_size - _holder_drift);
+					// Inserts for the threaded nuts
+					for(SIDE = ["long", "short"]) {
+						for(PART = ["1st", "2nd"]) {
+							_x = (PART == "1st")
+								? (SIDE == "long")
+									? (_holder_drift)
+									: (BOX_LENGTH - (2 * BASE_THICKNESS) - _holder_width - _holder_drift)
+								: (SIDE == "long")
+									? ((_holder_drift + _holder_width) * (-1))
+									: ((BOX_LENGTH - (2 * BASE_THICKNESS) - _holder_drift) * (-1));
 							
-							_y = (SIDE == 0)
-								? _holder_drift
-								: (BOX_WIDTH - _holder_size - _holder_drift);
+							_y = (PART == "1st")
+								? (_holder_drift)
+								: ((BOX_WIDTH - 2 * BASE_THICKNESS - _holder_drift) * (-1));
 							
-							translate([_x, _y, 0])
-							color(BOX_COLOR2)
-							#cube([_holder_size, _holder_size, _leg_height], center=false);
+							_rotation = (PART == "1st")
+								? ([0, 0, 0])
+								: ([0, 0, 180]);
 							
-							translate([_x, _y, 0])
-							color(BOX_COLOR2)
-							cube([_holder_size, _holder_size, _leg_height], center=false);
-						}*/
-					//}
+							rotate(_rotation) {
+								difference() {
+									// Housing
+									translate([_x, _y, BASE_THICKNESS])
+									color(BOX_COLOR2)
+									cube([_holder_width, _holder_length, _holder_height], center=false);
+							
+									// Half-Hexagon
+									translate([_x + _holder_width / 2, _y + _holder_length / 2, BASE_THICKNESS + OVERLAP1])
+									cylinder($fn=6, h=THREADED_NUTS_M4_HEIGHT, d=THREADED_NUTS_M4_DMTR, center=false);
+									
+									// Recess to plug in the threaded nut
+									translate([_x + ((_holder_width - THREADED_NUTS_M4_DMTR) / 2), _y + (_holder_length / 2), BASE_THICKNESS + OVERLAP1])
+									cube([THREADED_NUTS_M4_DMTR, THREADED_NUTS_M4_DMTR, THREADED_NUTS_M4_HEIGHT], center=false);
+									
+									// Another recess in order to reduce printing in the air
+									/*translate([_x + ((_holder_width - BOLTS_M4_DMTR) / 2), _y + (_holder_length / 2), _holder_height])
+									cube([BOLTS_M4_DMTR, _holder_length / 2 + OVERLAP1, THREADED_NUTS_M4_HEIGHT], center=false);*/
+								}
+							}
+						}
+					}
 				}
+				
+				for(SIDE = ["long", "short"]) {
+					for(PART = ["1st", "2nd"]) {
+						_x = (PART == "1st")
+							? (SIDE == "long")
+								? (_holder_drift + _holder_width / 2)
+								: (BOX_LENGTH - (2 * BASE_THICKNESS) - (_holder_width / 2) - _holder_drift)
+							: (SIDE == "long")
+								? (BOX_LENGTH - (2 * BASE_THICKNESS) - (_holder_width / 2) - _holder_drift)
+								: (_holder_drift + _holder_width / 2);
+						
+						_y = (PART == "1st")
+							? (_holder_drift + _holder_length / 2)
+							: (BOX_WIDTH - 2 * BASE_THICKNESS - _holder_drift - _holder_length / 2);
 			
-				/**
-				*	Draw hexagons for the threaded nuts
-				*/
-				translate([_holder_drift + _holder_size / 2, _holder_drift + _holder_size / 2, 0])
-				//cube([10, 10, 20]);
-				#cylinder($fn=6, h=40, d=THREADED_NUTS_M4_DMTR, center=false);
-
+						// Hole for the bolt
+						translate([_x, _y, OVERLAP1 * (-1)])
+						cylinder($fn=20, h=(BASE_THICKNESS + _holder_height + OVERLAP2), d=BOLTS_M4_DMTR);
+					}
+				}
 			}
 				
 			translate([BASE_THICKNESS * (-1), BASE_THICKNESS * (-1), 0]) {
 				difference() {
-					/**
-					*	Draw plate holders
-					*/
 					DrawPlateHolders();
 					
-					/**
-					*	We need some recess for the DCV5
-					*/
+					// We need some recess for the DCV5
 					_recess_width = 20;
 					translate([BASE_THICKNESS - OVERLAP1, ((BOX_WIDTH - _recess_width) / 2) - DCV5_DRIFT, BASE_THICKNESS - OVERLAP1])
 					cube([HOLDER_THICKNESS + OVERLAP2, 20, HOLDER_HEIGHT + OVERLAP2]);
@@ -300,8 +321,6 @@ module DrawBottomPlate() {
 			}
 		}
 	}
-	
-	//#cylinder($fn=6, h=40, d=THREADED_NUTS_M4_DMTR, center=false);
 }
 
 /**
@@ -486,23 +505,17 @@ module DrawFrontSide() {
 	translate(_translation) {
 		rotate(_rotation) {
 			difference() {
-				/**
-				*	Plate
-				*/
+				// Plate
 				_front_panel_thickness = BASE_THICKNESS - SEPARATE_FRONT_TEXT_PLATE_THICKNESS;
 				color(BOX_COLOR1)
 				cube([_front_panel_thickness, BOX_WIDTH, (BOX_HEIGHT - 1 * BASE_THICKNESS)]);
 				
-				/**
-				*	Illuminated text
-				*/
+				// Recess for the illuminated text
 				if (!DISABLE_FRONT_ILLUMINATION) {
 					DrawIlluminationText(_PART=1);
 				}
 				
-				/**
-				*	Mounting holes
-				*/
+				// Mounting holes
 				rotate([90, 0, 90]) {
 					_DrawMountingHoles1();
 				}
@@ -511,6 +524,9 @@ module DrawFrontSide() {
 	}
 }
 
+/**
+*	Creates either the illuminated text or is used for its (slightly larger) recess
+*/
 module DrawIlluminationText(_PART) {
 	_recess_depth = (_PART == 1)
 		? (!SEPARATE_FRONT_TEXT)
@@ -551,22 +567,15 @@ module DrawIlluminationText(_PART) {
 	
 	_illumination_text_bars_drift = 8;
 
-	/**
-	*	Recess for the text
-	*/
 	translate([_recess_depth, 0, 0]) {
 		rotate([-90, 0, 90]) {
-			/**
-			*	Text
-			*/
+			// Text
 			translate([_illumination_text_left, _illumination_text_top, OVERLAP1 * (-1)])
 			linear_extrude(_illumination_text_thickness)
 			offset(delta=_reduction_factor1)
 			text(FRONT_TEXT, size=FRONT_TEXT_SIZE, font="Bahnschrift:style=Bold", halign="center", valign="center", spacing=FRONT_TEXT_SPACING);
 			
-			/**
-			*	Draw bars
-			*/
+			// Draw horizontal bars
 			translate([(BOX_WIDTH - _illumination_text_bars_length) / 2, (_holders_holes_z + _illumination_text_bars_drift - _reduction_factor2) * (-1), 0 - OVERLAP1])
 			cube([_illumination_text_bars_length, _illumination_text_bars_height, _illumination_text_thickness]);
 			
@@ -577,7 +586,7 @@ module DrawIlluminationText(_PART) {
 }
 
 /**
-*	Separate illuminated text
+*	Seperate illuminated text plate (to be printed with translucent filament or white)
 */
 module DrawSeparateFrontTextPlate() {
 	_width_reduction = BASE_THICKNESS * 1.5;
@@ -593,21 +602,18 @@ module DrawSeparateFrontTextPlate() {
 	translate(_translation) {
 		rotate(_rotation) {
 			difference() {
+				// Plate
 				color("White")
-				cube([SEPARATE_FRONT_TEXT_PLATE_THICKNESS, (BOX_WIDTH - 2 * _width_reduction), (BOX_HEIGHT - 1 * BASE_THICKNESS)]);
+				cube([SEPARATE_FRONT_TEXT_PLATE_THICKNESS, (BOX_WIDTH - 2 * _width_reduction), (BOX_HEIGHT - 2 * BASE_THICKNESS)]);
 				
-				/**
-				*	Mounting holes
-				*/
+				// Mounting holes
 				rotate([90, 0, 90]) {
 					translate([_width_reduction * (-1), 0, 0])
 					_DrawMountingHoles1(countersunks=false);
 				}
 			}
 			
-			/**
-			*	Illuminated text
-			*/
+			// Illuminated text
 			translate([0, _width_reduction * (-1), 0])
 			DrawIlluminationText(_PART=2);
 		}
@@ -629,11 +635,12 @@ module DrawLeftSide() {
 	translate(_translation) {
 		rotate(_rotation) {
 			difference() {
+				// Plate
 				color(BOX_COLOR1)
 				cube([BASE_THICKNESS, (BOX_HEIGHT - 1 * BASE_THICKNESS), (BOX_LENGTH - 2 * BASE_THICKNESS + SEPARATE_FRONT_TEXT_PLATE_THICKNESS)]);
 				
+				// Mouting holes
 				rotate([90, 0, 90]) {
-					// Mouting holes
 					translate([0, SEPARATE_FRONT_TEXT_PLATE_THICKNESS, 0])
 					_DrawMountingHoles2();
 				}
@@ -657,11 +664,12 @@ module DrawRightSide() {
 	translate(_translation) {
 		rotate(_rotation) {
 			difference() {
+				// Plate
 				color(BOX_COLOR1)
 				cube([BASE_THICKNESS, (BOX_HEIGHT - 1 * BASE_THICKNESS), (BOX_LENGTH - 2 * BASE_THICKNESS + SEPARATE_FRONT_TEXT_PLATE_THICKNESS)]);
 				
+				// Mouting holes
 				rotate([90, 0, 90]) {
-					// Mouting holes
 					_DrawMountingHoles2();
 				}
 			}
