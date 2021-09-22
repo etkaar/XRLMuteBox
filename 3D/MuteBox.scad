@@ -17,7 +17,8 @@ BOX_HEIGHT = 51;
 
 BOX_COLOR1 = "DarkSlateBlue";
 BOX_COLOR2 = "Indigo";
-BOX_COLOR3 = "MediumSlateBlue";
+BOX_COLOR3 = "SlateBlue";
+BOX_COLOR4 = "MediumSlateBlue";
 
 /**
 *	Always add some padding to these values
@@ -33,6 +34,11 @@ THREADED_NUTS_M3_DMTR = 5.5 + 1.2;
 
 THREADED_NUTS_M4_HEIGHT = 3.0 + 0.4;
 THREADED_NUTS_M4_DMTR = 6.85 + 1.2;
+
+/**
+*	LED diameter for the illuminated front panel
+*/
+LED_DMTR = 5.0;
 
 /**
 *	Hole diameters for the terminal side
@@ -196,26 +202,48 @@ module DrawTopPlate() {
 		translate([(BOX_LENGTH / 2 + 10), (BOX_WIDTH / 2), 0 - OVERLAP1])
 		cylinder(h=BASE_THICKNESS + OVERLAP2, d=MUTE_BUTTON_HOLE_DMTR, center=false);
 	}
-	
-	/**
-	*	Draw plate holders
-	*/
+
 	DrawPlateHolders();
 	
-	// Draw illumination reflecting plate
+	/**
+	*	Draw LED assembling/illumination reflecting plate
+	*/
 	if (!DISABLE_FRONT_ILLUMINATION) {
-		_drift = _holders_holes_side_margin;
-		_thickness = 2.0;
+		_drift = 1.25 * _holders_holes_side_margin;
+		_thickness = 1.0;
 		_width = (BOX_WIDTH - 2 * BASE_THICKNESS - 2 * HOLDER_THICKNESS);
 		_height = (BOX_HEIGHT - 2 * BASE_THICKNESS) - HOLDER_HEIGHT - 1;
 		
-		/*translate([(BOX_LENGTH - 2 * HOLDER_THICKNESS - _drift), (BOX_WIDTH - _width) / 2, BASE_THICKNESS])
-		rotate([0, 0, 20])
-		#cube([_thickness, _width, _height]);
-		
-		translate([(BOX_LENGTH - 2 * HOLDER_THICKNESS - _drift), ((BOX_WIDTH - _width) / 2) - 20, BASE_THICKNESS])
-		rotate([0, 0, -20])
-		#cube([_thickness, _width, _height]);*/
+		// Plate
+		color(BOX_COLOR2)
+		translate([(BOX_LENGTH - 2 * HOLDER_THICKNESS - _drift), (BOX_WIDTH - _width) / 2, BASE_THICKNESS]) {
+			
+			// Reinforce
+			_radius = _thickness * 2;
+			translate([(_thickness / 2), 0, (_radius / 2)])
+			rotate([-90, 30, 0])
+			cylinder($fn=3, h=_width, r=_radius);
+			
+			// Drill a few holes in it
+			difference() {
+				cube([_thickness, _width, _height]);
+
+				_drift_z = 4;
+				
+				for(v = [1:3]) {
+					_drift_y = v * (LED_DMTR * 3.0);
+					
+					for(n = [1:3]) {
+						_z = n * (LED_DMTR * 1.75) * (-1) - _drift_z;
+						_y = _drift_y;
+						
+						rotate([0, 90, 0])
+						translate([_z, _y, LED_DMTR * (-1)])
+						cylinder($fn=3 * LED_DMTR, h=2 * LED_DMTR, d=LED_DMTR);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -242,7 +270,7 @@ module DrawBottomPlate() {
 				
 				union() {
 					// Plate
-					color(BOX_COLOR3)
+					color(BOX_COLOR4)
 					cube([BOX_LENGTH - (2 * BASE_THICKNESS) + SEPARATE_FRONT_TEXT_PLATE_THICKNESS, BOX_WIDTH - (2 * BASE_THICKNESS), BASE_THICKNESS]);
 					
 					// Inserts for the threaded nuts
@@ -416,6 +444,40 @@ module DrawPlateHolders() {
 }
 
 /**
+*	Front Side
+*/
+module DrawFrontSide() {
+	_translation = (PUT_ALL_TOGETHER || ATTACH_FRONT_SIDE)
+		? ([BOX_LENGTH, BOX_WIDTH, BASE_THICKNESS])
+		: ([BOX_LENGTH + BOX_HEIGHT + DISASSEMBLED_PARTS_MARGIN, BOX_WIDTH, (BASE_THICKNESS - SEPARATE_FRONT_TEXT_PLATE_THICKNESS)]);
+
+	_rotation = (PUT_ALL_TOGETHER || ATTACH_FRONT_SIDE)
+		? ([0, 0, 180])
+		: ([0, 90, 180]);
+
+	translate(_translation) {
+		rotate(_rotation) {
+			difference() {
+				// Plate
+				_front_panel_thickness = BASE_THICKNESS - SEPARATE_FRONT_TEXT_PLATE_THICKNESS;
+				color(BOX_COLOR1)
+				cube([_front_panel_thickness, BOX_WIDTH, (BOX_HEIGHT - 1 * BASE_THICKNESS)]);
+				
+				// Recess for the illuminated text
+				if (!DISABLE_FRONT_ILLUMINATION) {
+					DrawIlluminationText(_PART=1);
+				}
+				
+				// Mounting holes
+				rotate([90, 0, 90]) {
+					_DrawMountingHoles1();
+				}
+			}
+		}
+	}
+}
+
+/**
 *	Back Side - Terminals (XLR and DCV5 jacks)
 */
 module DrawBackSide() {
@@ -430,7 +492,7 @@ module DrawBackSide() {
 	translate(_translation) {
 		rotate(_rotation) {
 			difference() {
-				color(BOX_COLOR1)
+				color(BOX_COLOR1, alpha=0.75)
 				cube([BASE_THICKNESS, BOX_WIDTH, (BOX_HEIGHT - 1 * BASE_THICKNESS)]);
 
 				rotate([90, 0, 90]) {
@@ -483,40 +545,6 @@ module DrawBackSide() {
 					}
 					
 					// Mouting holes
-					_DrawMountingHoles1();
-				}
-			}
-		}
-	}
-}
-
-/**
-*	Front Side
-*/
-module DrawFrontSide() {
-	_translation = (PUT_ALL_TOGETHER || ATTACH_FRONT_SIDE)
-		? ([BOX_LENGTH, BOX_WIDTH, BASE_THICKNESS])
-		: ([BOX_LENGTH + BOX_HEIGHT + DISASSEMBLED_PARTS_MARGIN, BOX_WIDTH, (BASE_THICKNESS - SEPARATE_FRONT_TEXT_PLATE_THICKNESS)]);
-
-	_rotation = (PUT_ALL_TOGETHER || ATTACH_FRONT_SIDE)
-		? ([0, 0, 180])
-		: ([0, 90, 180]);
-
-	translate(_translation) {
-		rotate(_rotation) {
-			difference() {
-				// Plate
-				_front_panel_thickness = BASE_THICKNESS - SEPARATE_FRONT_TEXT_PLATE_THICKNESS;
-				color(BOX_COLOR1)
-				cube([_front_panel_thickness, BOX_WIDTH, (BOX_HEIGHT - 1 * BASE_THICKNESS)]);
-				
-				// Recess for the illuminated text
-				if (!DISABLE_FRONT_ILLUMINATION) {
-					DrawIlluminationText(_PART=1);
-				}
-				
-				// Mounting holes
-				rotate([90, 0, 90]) {
 					_DrawMountingHoles1();
 				}
 			}
@@ -636,7 +664,7 @@ module DrawLeftSide() {
 		rotate(_rotation) {
 			difference() {
 				// Plate
-				color(BOX_COLOR1)
+				color(BOX_COLOR3)
 				cube([BASE_THICKNESS, (BOX_HEIGHT - 1 * BASE_THICKNESS), (BOX_LENGTH - 2 * BASE_THICKNESS + SEPARATE_FRONT_TEXT_PLATE_THICKNESS)]);
 				
 				// Mouting holes
@@ -665,7 +693,7 @@ module DrawRightSide() {
 		rotate(_rotation) {
 			difference() {
 				// Plate
-				color(BOX_COLOR1)
+				color(BOX_COLOR3, alpha=0.75)
 				cube([BASE_THICKNESS, (BOX_HEIGHT - 1 * BASE_THICKNESS), (BOX_LENGTH - 2 * BASE_THICKNESS + SEPARATE_FRONT_TEXT_PLATE_THICKNESS)]);
 				
 				// Mouting holes
