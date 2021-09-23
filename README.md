@@ -1,5 +1,5 @@
-# Illuminated XRL Mute Box
-A great XLR mute box with an illuminated front and button.
+# XRL Mute Box
+A great 3D printed XLR mute box with an illuminated front and button.
 
 # Technical Background
 Note, that the contacts of your button need a very low contact resistance of about 50 mOhm. To bypass that (these small miniature buttons are often ugly) and make even big illuminated buttons available, we make use of an electromechanical relay.
